@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html><head>
+  <title>L'Aventurier Vrai</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+<style>
+  @font-face {
+    font-family: 'LCD';
+    font-style: normal;
+    font-weight: normal;
+    src: local('LCD'), url("rsrc/LCD14.otf");
+  }
+  @font-face {
+    font-family: 'Icons';
+    font-style: normal;
+    font-weight: normal;
+    src: local('Icons'), url("rsrc/MaterialIconsOutlined-Regular.otf");
+  }
+  @font-face {
+    font-family: 'BarlowC';
+    font-style: normal;
+    font-weight: normal;
+    src: local('BarlowC'), url("rsrc/BarlowCondensed-Light.ttf");
+  }
+  @font-face {
+    font-family: 'Typewriter';
+    font-style: normal;
+    font-weight:normal;
+    src: local('Typewriter'), url('rsrc/gtw.ttf');
+  }
+
+  html, body{
+    touch-action: pan-x pan-y;
+    padding:0;
+    margin:0;
+    box-sizing: border-box;
+
+    --ttl1: darkorange;    --ttl1i:chocolate;
+    --ttl3: gold;          --ttl3i:darkgoldenrod;
+    --ttl2: darkseagreen;  --ttl2i_o:seagreen; --ttl2i:#663;
+    --hoverBg: #ffffef;  /* hover bg */
+    --hoverBg2: #fafff3;  /* hover bg */
+    /* darkslategray;   expanded section title color */
+    /* --txtClr1:#343; #850; */
+    --txtClr1:#454;
+    font-family: "Typewriter";
+    font-size:16px;
+
+  }
+
+  /*=======================================================
+
+    Game screen layout (responsive layout using CSS grid)
+
+  ========================================================*/
+  /* narrowest type of screen */
+  #btnDiv {
+    position: fixed;
+    left:0px;
+    top:0px;
+    height:40px;
+    width:100vw;
+    background-color: #220;
+  } /* btnDiv */
+  #mazeDiv {
+    position:fixed;
+    left:0px;
+    top:40px;
+    height:calc(100vw - 40px);
+    width:100vw;
+  } /*mazeDiv */
+
+  .gameList {
+    box-sizing: content-box;
+    position:relative;
+    left:0px;
+    top:0px;
+    width: calc(100% - 8px);
+    height: calc(100% - 44px);
+
+    overflow: auto;
+    display:grid;
+    grid-template-rows: repeat(auto-fill, 66px);
+
+    background-color: transparent; /*bisque;*/
+    padding-left:4px;
+    padding-right:4px;
+    padding-top:0;
+    padding-bottom: 0px;
+
+  } /*gameList*/
+  .gameList > div
+  {
+    user-select:none;
+    box-sizing: content-box;
+    overflow:hidden;
+    margin-top:2px;
+    margin-bottom:2px;
+    background-color: "#fff";
+    height:64px;
+    display:grid;
+    grid-template-columns: 70px auto;
+    min-height:0;
+    font-family: sans-serif; /*'Courier New';*/ /*'BarlowC';*/
+    font-size:18px;
+  }
+  div.lvlSelected
+  {
+    background-color: #ff9; /* gold;*/
+    color: darkolivegreen;
+    font-weight:900;
+    /* font-size:20px; */
+  }
+  div.lvlSelected:hover
+  {
+    background-color: #efc;
+  }
+  .gameList div:hover
+  {
+    background-color:#ededc5;
+  }
+  .gameList div:active:hover
+  {
+    background-color: lightgoldenrodyellow;
+  }
+
+  /* Difficulty indicator font and style */
+  .diffTxt
+  {
+    float:right;
+    /* font-family:sans-serif; */
+    font-family: 'Icons';
+    font-size:18px;
+    margin-right:15px;
+  }
+
+  #lvlPicker
+  {
+    box-sizing: border-box;
+    position:fixed;
+    left:10px;
+    top:44px;
+    min-width: 220px;
+    height:calc(100vh - 60px);
+    height:calc(var(--vh, 1vh) * 100 - 60px);
+    max-width: 80vw;
+    border-radius: 6px;
+    box-shadow: 12px 12px 16px #0008;
+    background-color: ivory;
+    overflow:hidden;
+    padding-bottom:0px;
+  }
+  #lvlPicker > div#pickerTitle
+  {
+    font-family: sans-serif;
+    font-weight: 900;
+    font-size:24px;
+    box-sizing: border-box;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    position:relative;
+    left:0px;
+    top:0px;
+    height:40px;
+    width: 100%;
+    background-color: darkseagreen;
+    color: white;
+  }
+  #lvlPicker > div button
+  { /* the close button */
+    float: right;
+    background-color: palegoldenrod;
+    border:none;
+    margin-top:0;
+  }
+
+  .usrBest
+  {
+    float:right;
+    font-family: "BarlowC";
+    font-size:12;
+    color: tomato;
+    font-weight: 400;
+    font-style: italic;
+    vertical-align: top;
+    margin-top:-6px;
+    padding-right:8px;
+  }
+
+
+  #gfxCanv {
+    position: absolute;
+    top:0px;
+    left:0px;
+    padding:0;
+    margin:0;
+  }
+
+  .lcd {
+    float: left;
+    font-family:"LCD";
+    font-size:30px;
+  }
+
+.closeBtn#soundOnOffBtn
+{
+  position: absolute;
+  left: calc(100% - 48px);
+  top: 4px;
+  background-color:#4441;
+  color: olive;
+} /* soundOnOffBtn */
+.closeBtn#soundOnOffBtn:disabled
+{
+  color: #ddd;
+}
+.closeBtn#soundOnOffBtn:enabled
+{
+  box-shadow: 4px 4px 8px #0001;
+}
+
+.cmdBtn, .closeBtn
+{
+  width:32px;
+  height:32px;
+  border-radius: 16px;
+  margin-top: 3px;
+  margin-left:3px;
+  margin-right:1px;
+  background-color: #cc9;
+  /* background-color: #ddd; */
+  /* border-width:1px;
+  border-color: #663;
+  border-style: solid; */
+  border-width:0;
+
+  padding: 1px;
+  vertical-align: middle;
+
+  font-family: 'Icons';
+  font-size:24px;
+  color:#321;
+
+  padding-left:4px;
+  text-align:left;
+}
+.cmdBtn:disabled
+{
+  color: #0004;
+}
+.cmdBtn:enabled:hover, .closeBtn:enabled:hover
+{
+  background-color: #eee;
+  color:darkorange;
+}
+.cmdBtn:enabled:hover:active, .closeBtn:enabled:hover:active
+{
+  transform: translate(2px, 2px);
+  color: brown;
+}
+/* no button text for the narrowest screens (default) */
+.btnTxt
+{
+  display: none;
+  vertical-align: top;
+  font-family: BarlowC;
+  font-size: 22px;
+  padding-left:0px;
+  margin:0px;
+}
+
+
+
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++*\
+*   Responsive Layout Changes
+\*++++++++++++++++++++++++++++++++++++++++++++++++++*/
+/* @media only screen and (orientation: landscape) and (min-width: 600px)
+{
+  #lvlPicker
+  {
+    top:40px;
+    left:50px;
+  }
+} */
+@media only screen and (orientation: landscape) /*and (min-width: 800px)*/
+{
+  .cmdBtn
+  {
+    width:114px;
+  }
+  .btnTxt
+  {
+    display: inline;
+    margin-left:8px;
+  }
+  #lvlPicker
+  {
+    top:40px;
+    left:50px;
+  }
+}
+
+@media only screen and (orientation: portrait) and (min-width: 850px) {
+  /* portrait but wide enough for button text */
+  .cmdBtn
+  {
+    width: 114px;
+  }
+  .btnTxt
+  {
+    display: inline;
+    margin-left:8px;
+  }
+}
+
+/**************************************************
+*
+* moveCount: # of moves made so far.
+*
+***************************************************/
+#moveCount
+{
+  box-sizing: border-box;
+  display:block;
+  /* width:120px; */
+  height:40px;
+  padding-top:10px;
+  margin-right:8px;
+  /* vertical-align: top; */
+  text-align: right;
+  font-family: LCD;
+  font-size:18px;
+  float:right;
+  color: #aaa;
+}
+
+.wonTxt#moveCount
+{
+  color: yellowgreen;
+  /* font-style: italic; */
+  animation: wonBlinker 1s linear infinite;
+}
+@keyframes wonBlinker { 50% { opacity: 0; }}
+
+.spinner {
+  position: fixed;
+  background: transparent;
+  top: 50%;
+  left: 50%;
+  margin-top: -40px;
+  margin-left: -40px;
+  padding: 0px;
+  border-left:   8px solid #898; /*rgba(0,0,0,0.2);*/
+  border-top:    8px solid rgba(182,204,187,0.2);
+  border-right:  8px solid rgba(182,204,187,0.2);
+  border-bottom: 8px solid rgba(182,204,187,0.2);
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+  /* -ms-transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%); */
+  z-index: 5; /* on top of everything */
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+/*************************************************
+*
+* navInfo: the Promiximity display div.
+*
+**************************************************/
+#navInfo
+{
+  position:fixed;
+  left:calc(100vw - 100px);
+  top:calc(100vh - 50px);
+  top:calc(var(--vh, 1vh) * 100 - 50px);
+  width:80px;
+  height:30px;
+  background-color: #fd04;
+  color:darkolivegreen;
+  font-size:25px;
+  font-family:sans-serif;
+  vertical-align: top;
+  text-align:center;
+  border-radius: 8px;
+  border-color:olive;
+  border-style: ridge;
+} /* #navInfo */
+#navInfo::before
+{
+  content:"\eac3";
+  font-family:"Icons";
+  font-size:20px;
+  padding-right:3px;
+}
+#navInfo.Prox0::before
+{
+  content:"\f067";
+}
+#navInfo.Prox1::before
+{
+  content:"\ebe4";
+}
+#navInfo.Prox2::before
+{
+  content:"\ebd6";
+}
+#navInfo.Prox3::before
+{
+  content:"\ebe1";
+}
+#navInfo.Prox4::before
+{
+  content:"\e1d8";
+}
+#navInfo.ProxBad::before
+{
+  content:"\f063";
+}
+
+
+/***************************************************
+*
+*  Help/About/Game Info div
+*
+****************************************************/
+#aboutBoxDiv
+{
+  box-sizing:border-box;
+  position:fixed;
+  left:20px;
+  top:20px;
+  width:calc(100vw - 40px);
+  height:calc(100vh - 40px);
+  height:calc(var(--vh, 1vh) * 100 - 40px);
+  max-width: 700px;
+  background-color: darkolivegreen;
+  overflow: hidden;
+  padding:6px;
+  border-radius: 8px;
+  box-shadow: 12px 12px 16px #0008;
+  font-family: 'Typewriter';
+} /* #aboutBoxDiv */
+
+#closeAbtBox
+{
+  position: absolute;
+  left: calc(100% - 52px);
+  top: 4px;
+  background-color:#4443;
+} /* #closeAbtBox */
+#aboutBoxContentDiv
+{
+  touch-action: pan-y;
+  box-sizing:border-box;
+  position: relative;
+  left: 0px;
+  top:0px;
+  width:100%;
+  height:100%;
+  overflow: auto;
+  padding:8px;
+  background-color: ivory;
+  border-radius:2px;
+}
+
+.abtTitleBand
+{
+  /* background-color:#cc9; */
+  display:block;
+  background-color:#ed8;
+  border-radius:4px;
+  border-width:0;
+  padding: 5px;
+  box-shadow:8px 8px 8px #0002;
+
+  color:#242;
+  font-size:26px;
+  text-shadow:3px 3px 7px #0006;
+}
+
+/*======================================================
+
+  Collapsible About Box Sections
+
+  ======================================================*/
+.content {
+  font-family: "TypeWriter";
+}
+.content b {
+  font-family: "Typewriter";
+  font-style:bold;
+  font-stretch: condensed;
+  color: olive;
+}
+
+.content h2, .content h3, .content h4 {
+  font-family: "Typewriter";
+  color: olivedrab;
+  margin-bottom:10px;
+}
+
+.icon, h6 {
+  font-family: 'Icons';
+  font-size: 22px;
+}
+
+.content em {
+  color: darkolivegreen;
+}
+
+.collapsable > input[name="expandBox"] {
+  display: none;
+}
+
+.collapsable label {
+  font-family: "TypeWriter";
+  font-size: 26px;
+  margin: 0 auto;
+}
+
+.collapsable .content {
+  /* font-family: 'Courier New', Courier, monospace; */
+  /* font-family: "TypeWriter2"; */
+  /* font-family: "Roboto"; */
+  /* font-family: "Times New Roman", Times, serif; */
+  font-weight: normal;
+  font-size:18px;
+  margin-left:40px;
+  color: var(--txtClr1);
+}
+
+/* Collapsible content animation effects */
+.collapsable .content {
+  /* background: #fff; */
+  transform-origin: 30% 0%; /* equivalent to 50% 0% */
+  transform: perspective(500px) rotateX(-90deg);
+  /* transform: scaleY(0);
+  transform-origin:0% 0%; */
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.5s, transform 0.5s;
+}
+
+.collapsable > input[name="expandBox"]:checked ~ .content {
+  transform-origin: 30% 0%; /* equivalent to 50% 0% */
+  transform: perspective(500px) rotateX(0deg);
+  max-height: 100vh;
+  max-height: calc(var(--vh, 1vh) * 100);
+  /* transform: scaleY(100%);
+  transform-origin:0% 0%; */
+  transition: max-height 0.5s, transform 0.5s;
+}
+
+.collapsable > input[name="expandBox"]:checked ~ .content {
+  border-top: 0;
+  transition: 0.3s;
+}
+
+.collapsable label {
+  display: block;
+  margin: 0;
+  color: var(--ttl2);
+  cursor: pointer;
+  font-weight: normal;
+  padding:10px;
+  background: transparent;
+  user-select: none;
+}
+
+.collapsable label:hover,
+.collapsable label:focus {
+  color: var(--ttl3);
+  background:var(--hoverBg);
+}
+.collapsable > input[name="expandBox"]:checked ~ label {
+  color: var(--ttl1);
+  background: transparent;
+}
+.collapsable > input[name="expandBox"]:checked ~ label:hover,
+.collapsable > input[name="expandBox"]:checked ~ label:focus {
+  color: var(--ttl2i);
+  background:var(--hoverBg2);
+}
+
+/* Style for the animated icon before the label of collapsed section */
+.collapsable label::before {
+  color: var(--ttl2i);
+  font-family: "Icons";
+  content: attr(name); /*"\2312";*/
+  display: inline-block;
+  margin-right: 10px;
+  font-size: 1em;
+  line-height: 1em;
+  vertical-align: middle;
+  transform-origin: 50% 50%; /*previously 50% 39%*/
+  transition: 0.4s;
+}
+.collapsable label:hover::before,
+.collapsable label:focus::before {
+  color: var(--ttl3i);
+}
+
+/* Style for the animated icon before the label of expanded section */
+.collapsable > input[name="expandBox"]:checked ~ label::before {
+  /* content: "\2313"; */
+  color: var(--ttl1i);
+  font-family: "Icons";
+  content: attr(name);
+  transform: rotate(180deg);
+  transform-origin: 50% 50%;
+  transition: 0.4s;
+}
+
+b { color: slategray;
+}
+
+a, a>b {
+  color: orange;
+  font-family: "TypeWriter2";
+  font-style:bold;
+  font-weight:600;
+}
+a:visited {
+  color: tan;
+  font-style:normal;
+}
+img {
+  max-width: 70vw;
+  max-height:70vh;
+}
+
+
+</style>
+
+<script src="laven.js"></script>
+</head>
+
+<body onload = "initPage();">
+
+  <div id="mazeDiv">
+    <canvas class="gfxCanv" id="gfxCanv"></canvas>
+    <button class='closeBtn' id='soundOnOffBtn' disabled>&#xe04f;</button>
+  </div>
+  <div id="btnDiv">
+    <button class="cmdBtn" id="helpBtn" title="About" >&#xe55b;<span class="btnTxt">About</span></button>
+    <!-- <button class="cmdBtn" id="restartBtn" title="Restart level" >&#xe16e;<span class="btnTxt">Restart</span></button> -->
+    <!-- <button class="cmdBtn" id="restartBtn" title="Restart level" >&#xeab3;<span class="btnTxt">Restart</span></button> -->
+    <!-- <button class="cmdBtn" id="restartBtn" title="Restart level" >&#xea78;<span class="btnTxt">Restart</span></button> -->
+    <button class="cmdBtn" id="restartBtn" title="Restart level" >&#xe88a;<span class="btnTxt">Restart</span></button>
+    <button class="cmdBtn" id="pickLvlBtn" title="Level picker">&#xe0ee;<span class="btnTxt">Levels</span></button>
+    <button class="cmdBtn" id="undoBtn"   title="Undo last move">&#xe166;<span class="btnTxt">Undo</span></button>
+    <button class="cmdBtn" id="navBtn" title="Proximity Sensor">&#xe1da;<span class="btnTxt">Proximity</span></button>
+    <button class="cmdBtn" id="revealBtn" title="Auto move">&#xf06c;<span class="btnTxt">Auto</span></button>
+    <div id="moveCount">0</div>
+  </div>
+
+  <div id="spinner" class="spinner" hidden>
+  </div>
+
+  <div id="navInfo">
+  </div>
+
+
+  <div id="lvlPicker" hidden>
+    <div id="pickerTitle"><span>Levels</span><button class='closeBtn' id="closeLvlPicker">&#xe5cd;</button></div>
+    <div id="gmLvlListDiv" class="gameList">
+    </div>
+  </div>
+
+  <div id="aboutBoxDiv" hidden>
+    <div id="aboutBoxContentDiv">
+      <span class='abtTitleBand'>
+        “L'Aventurier... <span style="color:#631;">Vrai</span>”
+      </span>
+      <p></p>
+
+      <section class="collapsable">
+        <input id="esc" type="checkbox" name="expandBox">
+        <label name="&#xe566;" for="esc">Enfuyez-vous <i>vite!</i></label>
+        <div class="content">
+          You, the renowned archaeologist and adventurer, are trapped in a mysterious
+          catacomb with floating chambers and are desperate to find a way out...
+          <p>
+          Though you've figured out the ancient mechanisms that shift the chambers,
+          it's tricky to find an arrangement that would get you out of the maze.
+          </p>
+          <p>
+          Not only is the water below infested with hungry crocodiles,
+          but the elevated chambers with emerald flooring are also booby-trapped to
+          kill anyone standing still...
+          </p>
+        </div>
+      </section>
+      <section class="collapsable">
+        <input id="clc" type="checkbox" name="expandBox">
+        <label name="&#xe55b;" for="clc">How To Play</label>
+        <div class="content" style="margin-left:0px;">
+          <ul>
+            <li>Find a way to move the Adventurer around and escape through the elevated exit
+              at the top-left corner of the catacomb.</li>
+            <li>Click on a chamber tile to slide it towards the empty slot, if possible.</li>
+            <li>The chamber tile with the Adventurer inside cannot be shifted.</li>
+            <li>Drag the Adventurer token or use the arrow keys to move the adventurer.</li>
+            <li>The Adventurer cannot move between elevated emerald-floored levels and
+              lower-level stone-floored chambers, unless through a connecting staircase.</li>
+            <li>The Adventurer can run-through, but cannot stay in any of the emerald-floored
+              elevated chambers. Those are booby-trapped...</li>
+            <li>Drag from the empty slot across 3 unoccupied chamber tiles then back to the empty slot to
+              perform a quick 3-chamber combo-swap &mdash; useful for experienced Adventurers.<br>
+              <img src="rsrc/comboswap.jpg"></img>
+            </li>
+          </ul>
+        </div>
+      </section>
+      <section class="collapsable">
+        <input id="se3" type="checkbox" name="expandBox">
+        <label name="&#xf06c;" for="se3">Robo Sidekick</label>
+        <div class="content">
+          An exhausted adventurer could sometimes use a little help from some trusty modern
+          gadgets &mdash; e.g., a little Robot that automatically lead the Adventurer out
+          of the maze using the fewest number of moves.
+          <p>Click on the "Auto" button to tell the Robot to solve the maze automatically.
+          Press on the maze or any of the buttons to interrupt the robo-moves.
+          </p>
+          <p>Be careful not to let the Robot steal your thunder and spoil the fun of the adventure!</p>
+        </div>
+      </section>
+      <section class="collapsable">
+        <input id="se5" type="checkbox" name="expandBox">
+        <label name="&#xe63e;" for="se5">Proximity Sensor</label>
+        <div class="content">
+          The Proximity Sensor is another gadget that could help the Adventurer
+          check whether they are on the right path.  The number displayed is the minimum
+          number of moves to an escape.<br><img src="rsrc/proximok.jpg"></img>
+          <p>Please don't get obsessed with the number of moves &mdash;
+            <i><span style="color:darkolivegreen;">
+              The fun is in the journey,
+            not the destination!</span></i></p>
+            <img src="rsrc/proximdown.jpg"></img>
+        </div>
+      </section>
+
+      <section class="collapsable">
+        <input id="se4" type="checkbox" name="expandBox">
+        <label name="&#xf10a;" for="se4">Credits</label>
+        <div class="content">
+          This is a TypeScript reimplementation of my ICS3U1 final project, with
+          a new, highly optimized and fast BFS solver implemented in C++ added.
+          I worked ceaselessly for days on this game and was quite happy with it.
+          Disappointingly, it was silently marked
+          without comments or feedback... It would be nice
+          if we could get a chance to discuss and play with
+          other classmates' creation and share our experience.
+          <p>
+          The game is based on a physical puzzle named L'Aventurier given to me when I was very young.
+          I still like the puzzle very much. The original game is designed
+          by Raf Peeters for the Belgium company Smart Games. Photos of the actual game-board
+          and pieces are taken
+          using a 600mm super-telephoto lens from 15ft away to minimize perspective
+          distortions. The images are then enhanced and edited in Photoshop, with
+          semi-transparent shadows hand-painted to create the reasonably convincing
+          photo-realistic, i.e. <i style="color:darkorange;">vrai</i>, appearance.
+          </p>
+          <p>Rufin, Feb 2023</p>
+        </div>
+      </section>
+
+<!--
+      <section class="collapsable">
+        <input id="se6" type="checkbox" name="expandBox">
+        <label name="&#xef6f;" for="se6">How to play</label>
+        <div class="content">
+          <p> ?? </p>
+        </div>
+      </section>
+      <section class="collapsable">
+        <input id="se7" type="checkbox" name="expandBox">
+        <label name="&#xef6f;" for="se7">How to play</label>
+        <div class="content">
+          <p> ?? </p>
+        </div>
+      </section> -->
+    </div>
+    <button class='closeBtn' id="closeAbtBox">&#xe5cd;</button>
+  </div>
+
+</body>
+</html>
