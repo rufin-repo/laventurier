@@ -1,0 +1,9 @@
+Copyright (c) 2023 Rufin Hsu. All rights reserved.
+This Java implementation of the game L'Aventurier is written by Rufin Hsu,
+based on the board game of the same name designed by Raf Peeters.
+Photorealistic and hand-drawn game board and room tile graphics
+created by Rufin Hsu from scratch. Game board and pieces are photographed
+with super-telephoto lens to eliminate perspective distortions, then
+manually background-erased. Semi-transparent shadows manually painted.
+All images copyright (c) 2023 Rufin Hsu. All rights reserved.
+Public domain sound effects from YouTube.
