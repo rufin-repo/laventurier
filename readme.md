@@ -19,3 +19,5 @@ Implementation of L'Aventurier in TS and Java.
 Java version: Run from `java/L_SRC/` directory.
 
 Web version: Compile TS files; run `lclo.bat`; serve folder.
+
+Copyright (c) 2024 Rufin Hsu. All rights reserved.
